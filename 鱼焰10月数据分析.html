@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鱼焰门店 - 11月运营分析看板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+    Chosen Palette: Calm Neutrals (White, Gray, Slate, Indigo accent)
+    Application Structure Plan: A 5-tab SPA dashboard (概览, 内容流量, 直播分析, 产品与用户, 11月目标). This non-linear structure is better than the report's linear 6-part list. It groups related info (Product+User) and isolates key areas of concern (Content, Live) and the primary objective (Goals) for quick management review. User clicks tab -> JS hides other sections -> selected section is shown.
+    Visualization & Content Choices: 
+        1. 概览 (Dim 1): Stat Cards (Inform) + Donut Chart (Compare Sources) - Chart.js - Justification: Quick health check.
+        2. 内容流量 (Dim 2): Stat Cards (Highlighting problems in red) + Bar Chart (Compare Instant vs. Delayed GMV) - Chart.js - Justification: Isolate content failure points (watch rate) and show long-tail value.
+        3. 直播分析 (Dim 3): Stat Cards (Highlighting low UV/GME rate) + HTML List (Pacing Plan) - Justification: Isolate live stream inefficiencies.
+        4. 产品与用户 (Dim 4/5): HTML Lists (Product strategy) + Bar Chart (Age) + Pie Chart (Gender) - Chart.js - Justification: Combine product strategy with its target user profile.
+        5. 11月目标 (Dim 6): HTML/Tailwind "Progress Bar" styled table (Compare Current vs. Goal) - Justification: The most critical "call to action" page, showing the path to success.
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif';
+            background-color: #f3f4f6;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .nav-tab {
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        .nav-tab:hover {
+            background-color: #e5e7eb;
+        }
+        .nav-tab.active {
+            background-color: #4f46e5;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .view-section {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="mb-6">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">🐟 鱼焰门店 - 11月运营分析看板</h1>
+            <p class="mt-2 text-lg text-gray-600">交互式数据报告，助您洞察10月表现并聚焦11月核心目标。</p>
+        </header>
+
+        <nav class="flex flex-wrap gap-2 md:gap-4 mb-6 pb-4 border-b border-gray-200">
+            <button class="nav-tab active" data-view="overview">📊 经营概览</button>
+            <button class="nav-tab" data-view="content">🎬 内容与流量</button>
+            <button class="nav-tab" data-view="live">🎥 直播分析</button>
+            <button class="nav-tab" data-view="product-user">💰 产品与用户</button>
+            <button class="nav-tab" data-view="goals">🚀 11月核心目标</button>
+        </nav>
+
+        <main>
+            <!-- 1. 经营概览 -->
+            <section id="overview" class="view-section">
+                <div class="mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">📊 经营概览</h2>
+                    <p class="mt-1 text-gray-600">本部分展示10月份的核心经营数据，反映了门店的基础营收状况和成交结构。整体体量不错，但成交结构严重依赖搜索，内容转化能力偏弱。</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+                    <div class="stat-card md:col-span-1">
+                        <h3 class="text-sm font-medium text-gray-500">总成交额 (GMV)</h3>
+                        <p class="mt-1 text-4xl font-bold text-indigo-600">¥124,000</p>
+                        <p class="mt-2 text-sm text-gray-600">诊断：GMV 体量不错，具备良好基础。</p>
+                    </div>
+                    <div class="stat-card md:col-span-1">
+                        <h3 class="text-sm font-medium text-gray-500">总核销额 (GME)</h3>
+                        <p class="mt-1 text-4xl font-bold text-green-600">¥78,000</p>
+                        <p class="mt-2 text-sm text-gray-600">诊断：真实消费稳定，但核销率(63%)有提升空间。</p>
+                    </div>
+                    <div class="stat-card md:col-span-1">
+                        <h3 class="text-sm font-medium text-gray-500">总退款额</h3>
+                        <p class="mt-1 text-4xl font-bold text-red-600">¥41,000</p>
+                        <p class="mt-2 text-sm text-gray-600">诊断：退款率(33%)属本地生活高位，需管理库存压力。</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                    <div class="stat-card">
+                        <h3 class="text-lg font-semibold mb-4">主要成交来源 (10月)</h3>
+                        <div class="chart-container">
+                            <canvas id="salesSourceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="stat-card flex flex-col justify-center">
+                        <h3 class="text-lg font-semibold mb-4">成交结构诊断与优化</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-base font-medium text-blue-700">搜索成交 (占 53%)</span>
+                                    <span class="text-base font-medium">¥65,720</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-4">
+                                    <div class="bg-blue-600 h-4 rounded-full" style="width: 53%"></div>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-600">**诊断**：搜索占绝对主导，流量精准，是核心成交来源。</p>
+                                <p class="mt-1 text-sm text-gray-600">**优化**：加强SEO视频布局，全面覆盖Top关键词。</p>
+                            </div>
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-base font-medium text-indigo-700">内容成交 (视频/直播 占 30%)</span>
+                                    <span class="text-base font-medium">¥37,200</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-4">
+                                    <div class="bg-indigo-600 h-4 rounded-full" style="width: 30%"></div>
+                                </div>
+                                <p class="mt-1 text-sm text-gray-600">**诊断**：内容转化偏弱，增长乏力，未能充分利用抖音的兴趣流量。</p>
+                                <p class="mt-1 text-sm text-gray-600">**优化**：提升内容成交占比至 40%，加强内容种草力与互动率。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 内容与流量 -->
+            <section id="content" class="view-section hidden">
+                <div class="mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">🎬 内容与流量</h2>
+                    <p class="mt-1 text-gray-600">本部分分析短视频内容的表现。当前核心问题是：内容开头失败（跳出率高、完播率低）且更新频率严重不足，导致流量和转化双低。</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+                    <div class="stat-card bg-red-50 border border-red-200">
+                        <h3 class="text-sm font-medium text-red-700">2秒跳出率</h3>
+                        <p class="mt-1 text-4xl font-bold text-red-600">48.7% <span class="text-lg font-medium align-middle">↑ 8.72%</span></p>
+                        <p class="mt-2 text-sm text-red-700">**诊断**：【开头失败】近一半用户在2秒内流失，内容转化起点崩塌。</p>
+                        <p class="mt-1 text-sm text-red-700">**优化**：调整开头节奏，必须在3秒内展示高能美食特写。</p>
+                    </div>
+                    <div class="stat-card bg-red-50 border border-red-200">
+                        <h3 class="text-sm font-medium text-red-700">平均完播率</h3>
+                        <p class="mt-1 text-4xl font-bold text-red-600">22.3% <span class="text-lg font-medium align-middle">↓ 3.06%</span></p>
+                        <p class="mt-2 text-sm text-red-700">**诊断**：【吸引力下降】内容切入慢，用户兴趣衰退。</p>
+                        <p class="mt-1 text-sm text-red-700">**优化**：KPI: 完播率提升至 ≥ 28%。优化视频结构与封面。</p>
+                    </div>
+                    <div class="stat-card bg-yellow-50 border border-yellow-200">
+                        <h3 class="text-sm font-medium text-yellow-700">更新频率</h3>
+                        <p class="mt-1 text-4xl font-bold text-yellow-600">↓ 57%</p>
+                        <p class="mt-2 text-sm text-yellow-700">**诊断**：更新节奏中断，严重影响算法权重和流量推荐。</p>
+                        <p class="mt-1 text-sm text-yellow-700">**优化**：KPI: 每周保持 ≥ 5 条视频输出，制定固定更新计划。</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                    <div class="stat-card">
+                        <h3 class="text-lg font-semibold mb-4">视频成交额 (¥13,500)</h3>
+                        <div class="chart-container">
+                            <canvas id="videoGmvChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3 class="text-lg font-semibold mb-4">视频流量与互动分析</h3>
+                        <ul class="space-y-4">
+                            <li>
+                                <h4 class="font-medium text-gray-800">视频总播放量</h4>
+                                <p class="text-2xl font-bold">65,000 <span class="text-base font-normal text-gray-500">(6 条, 均值 1 万)</span></p>
+                                <p class="text-sm text-gray-600">**诊断**：曝光总量少，流量不稳定，与更新频率低直接相关。</p>
+                            </li>
+                            <li>
+                                <h4 class="font-medium text-gray-800">自然流量占比</h4>
+                                <p class="text-2xl font-bold">80%</p>
+                                <p class="text-sm text-gray-600">**诊断**：自然流量权重高，账号内容本身有推荐潜力，不应浪费。</p>
+                            </li>
+                            <li>
+                                <h4 class="font-medium text-gray-800">评论互动</h4>
+                                <p class="text-2xl font-bold">非常少</p>
+                                <p class="text-sm text-gray-600">**诊断**：缺乏互动引导，影响算法对账号活跃度的判断。</p>
+                                <p class="mt-1 text-sm text-gray-600">**优化**：在文案加入提问（如“你最爱什么口味的烤鱼？”）与挑战语句。</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 直播分析 -->
+            <section id="live" class="view-section hidden">
+                <div class="mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">🎥 直播分析</h2>
+                    <p class="mt-1 text-gray-600">本部分展示直播间的转化效率。当前核心问题是：直播间效率极低，UV价值和核销率双低，用户“只囤券不核销”的行为严重，是退款的主因之一。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+                    <div class="stat-card bg-red-50 border border-red-200">
+                        <h3 class="text-sm font-medium text-red-700">UV 价值 (每千次观看成交)</h3>
+                        <p class="mt-1 text-4xl font-bold text-red-600">¥6</p>
+                        <p class="mt-2 text-sm text-red-700">**诊断**：【效率低】流量利用效率低，流量承接和转化话术有缺陷。</p>
+                        <p class="mt-1 text-sm text-red-700">**优化**：KPI: UV 价值提升至 ≥ 10 元。提升流量精准度与直播促单力。</p>
+                    </div>
+                    <div class="stat-card bg-red-50 border border-red-200">
+                        <h3 class="text-sm font-medium text-red-700">直播间核销率</h3>
+                        <p class="mt-1 text-4xl font-bold text-red-600">30%</p>
+                        <p class="mt-2 text-sm text-red-700">**诊断**：【低效】核销率极低，用户囤券行为严重，主播未制造使用紧迫感。</p>
+                        <p class="mt-1 text-sm text-red-700">**优化**：KPI: 直播核销率提升至 ≥ 50%。加入限时使用、赠送券引导。</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 class="text-sm font-medium text-gray-500">直播总成交额</h3>
+                        <p class="mt-1 text-4xl font-bold text-indigo-600">¥17,000</p>
+                        <p class="mt-2 text-sm text-gray-600">**诊断**：直播贡献度小，未发挥其高转化承接作用。</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <h3 class="text-lg font-semibold mb-4">直播内容节奏优化</h3>
+                    <p class="text-gray-600 mb-4">**诊断**：当前直播缺乏“焦虑引导”，推介比例不均，未能制造抢购和使用紧迫感。</p>
+                    <h4 class="font-medium text-gray-800 mb-2">建议话术结构 (11月优化)：</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-center">
+                            <span class="flex-shrink-0 w-32 text-sm font-medium text-blue-800">讲卖点 (40%)</span>
+                            <div class="w-full bg-gray-200 rounded-full h-5">
+                                <div class="bg-blue-600 h-5 rounded-full text-xs font-medium text-white text-center p-0.5 leading-none" style="width: 40%">40%</div>
+                            </div>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="flex-shrink-0 w-32 text-sm font-medium text-green-800">讲优惠 (30%)</span>
+                            <div class="w-full bg-gray-200 rounded-full h-5">
+                                <div class="bg-green-600 h-5 rounded-full text-xs font-medium text-white text-center p-0.5 leading-none" style="width: 30%">30%</div>
+                            </div>
+                        </li>
+                        <li class="flex items-center">
+                            <span class="flex-shrink-0 w-32 text-sm font-medium text-red-800">催单/使用引导 (30%)</span>
+                            <div class="w-full bg-gray-200 rounded-full h-5">
+                                <div class="bg-red-600 h-5 rounded-full text-xs font-medium text-white text-center p-0.5 leading-none" style="width: 30%">30%</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 4. 产品与用户 -->
+            <section id="product-user" class="view-section hidden">
+                <div class="mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">💰 产品与用户</h2>
+                    <p class="mt-1 text-gray-600">本部分结合了团购产品结构和用户画像。数据显示用户群体高度精准（广东、24-40岁、爱吃烤鱼），产品策略应围绕他们进行优化。</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
+                    <div class="stat-card">
+                        <h3 class="text-lg font-semibold mb-4">团购产品结构 (维度4)</h3>
+                        <ul class="space-y-4">
+                            <li>
+                                <h4 class="font-medium text-gray-800">退款率: 33%</h4>
+                                <p class="text-sm text-gray-600">**诊断**：套餐规则限制过多或价值感设计需要更加透明。</p>
+                            </li>
+                            <li>
+                                <h4 class="font-medium text-gray-800">核销率: 63%</h4>
+                                <p class="text-sm text-gray-600">**诊断**：现有核销驱动力不足。</p>
+                            </li>
+                            <li>
+                                <h4 class="font-medium text-indigo-700">优化建议 (SKU 结构)</h4>
+                                <p class="text-sm text-gray-600">建议采用**引流款、主打款、利润款**三层结构，并优化套餐内容与规则说明，增加“仅限本周使用”等时效性激励。</p>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="stat-card">
+                        <h3 class="text-lg font-semibold mb-4">核心关键词 (维度5)</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full">烤鱼</span>
+                            <span class="bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full">美食</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">海丰美食</span>
+                            <span class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">天虹美食</span>
+                        </div>
+                        <p class="mt-4 text-sm text-gray-600">**诊断**：关键词具有高度地域和品类热度。</p>
+                        <p class="mt-1 text-sm text-gray-600">**优化**：在视频标题和评论区高频植入关键词，加强地域绑定。</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                    <div class="stat-card">
+                        <h3 class="text-lg font-semibold mb-4">用户年龄层</h3>
+                        <p class="text-sm text-gray-600 mb-2">主力人群为 (24-40岁) 占比 **76%**。</p>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h3 class="text-lg font-semibold mb-4">用户性别与地域</h3>
+                        <div class="chart-container" style="height: 250px;">
+                            <canvas id="genderChart"></canvas>
+                        </div>
+                         <p class="text-center text-sm text-gray-600 mt-4">**地域分布**：广东 **100%** (强本地性)。</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 5. 11月核心目标 -->
+            <section id="goals" class="view-section hidden">
+                <div class="mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">🚀 11月核心目标</h2>
+                    <p class="mt-1 text-gray-600">这是我们11月最重要的行动指南。所有资源都应围绕以下6个核心KPI展开，重点是**提升核销率、完播率和直播效率**。</p>
+                </div>
+
+                <div class="stat-card">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">核心指标</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">10月现状</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">11月目标</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="min-width: 250px;">优化方向</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">核销率 (整体)</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-red-600">63%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-green-600">≥ 75%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">视频中增加“限时核销”引导，优化核销体验。</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">退款率 (金额)</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-red-600">33%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-yellow-600">≤ 30%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">重点优化**核销率**来对冲退款率，优化规则透明度。</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">视频完播率 (5s)</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-red-600">22.3%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-green-600">≥ 28%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">调整开头节奏与视觉冲击，解决 2 秒跳出问题。</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">视频更新频率</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-red-600">↓ 57%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-green-600">每周 ≥ 5 条</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">制定固定更新计划，恢复内容供给。</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">直播核销率</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-red-600">30%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-green-600">≥ 50%</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">优化话术与时间段，在直播中制造“使用紧迫感”。</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">UV 价值</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-red-600">6 元</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-green-600">≥ 10 元</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">提升流量精准度与直播促单力。</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.nav-tab');
+            const views = document.querySelectorAll('.view-section');
+
+            const charts = {};
+
+            function switchView(viewName) {
+                views.forEach(view => {
+                    if (view.id === viewName) {
+                        view.classList.remove('hidden');
+                    } else {
+                        view.classList.add('hidden');
+                    }
+                });
+
+                tabs.forEach(tab => {
+                    if (tab.dataset.view === viewName) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
+                    }
+                });
+
+                if (viewName === 'overview' && !charts.salesSource) {
+                    renderOverviewChart();
+                } else if (viewName === 'content' && !charts.videoGmv) {
+                    renderContentChart();
+                } else if (viewName === 'product-user' && !charts.age) {
+                    renderUserCharts();
+                }
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    switchView(tab.dataset.view);
+                });
+            });
+
+            function renderOverviewChart() {
+                const ctx = document.getElementById('salesSourceChart').getContext('2d');
+                charts.salesSource = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['抖音搜索 (53%)', '平台推荐 (21%)', '猜你喜欢 (10%)', '其他 (16%)'],
+                        datasets: [{
+                            data: [53, 21, 10, 16],
+                            backgroundColor: ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: { size: 12 },
+                                    padding: 20
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderContentChart() {
+                const ctx = document.getElementById('videoGmvChart').getContext('2d');
+                charts.videoGmv = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['视频成交额'],
+                        datasets: [
+                            {
+                                label: '即时成交',
+                                data: [6000],
+                                backgroundColor: '#10b981',
+                                borderRadius: 4
+                            },
+                            {
+                                label: '延迟成交 (14天内)',
+                                data: [7500],
+                                backgroundColor: '#f59e0b',
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                stacked: true,
+                                title: { display: true, text: '成交金额 (元)' }
+                            },
+                            y: {
+                                stacked: true
+                            }
+                        },
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ¥${context.raw}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function renderUserCharts() {
+                const ageCtx = document.getElementById('ageChart').getContext('2d');
+                charts.age = new Chart(ageCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['24-30岁', '31-40岁', '其他'],
+                        datasets: [{
+                            label: '年龄层占比',
+                            data: [39, 37, 24],
+                            backgroundColor: ['#3b82f6', '#6366f1', '#d1d5db'],
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: '占比 (%)' }
+                            }
+                        }
+                    }
+                });
+
+                const genderCtx = document.getElementById('genderChart').getContext('2d');
+                charts.gender = new Chart(genderCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['男性 (55%)', '女性 (45%)'],
+                        datasets: [{
+                            data: [55, 45],
+                            backgroundColor: ['#3b82f6', '#ec4899'],
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { font: { size: 12 }, padding: 15 }
+                            }
+                        }
+                    }
+                });
+            }
+
+            switchView('overview');
+        });
+    </script>
+</body>
+</html>
